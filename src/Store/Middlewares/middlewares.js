@@ -1,16 +1,19 @@
 import { ActionTypes } from '../Actions/actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import firebase from 'firebase';
+import auth from '@react-native-firebase/auth';
 let redirect = {}; // declare navigation object
+let database = firebase.database().ref();
+let haha = firebase.auth();
 
 // asyncstorage function for saving logged in user info
-async function storeData(data, admin) {
+async function storeData(data) {
     try {
         await AsyncStorage.setItem('store',
             JSON.stringify({
                 'data': {
                     store: data, // seller details
                     isLoggedIn: true, // user logged in boolean
-                    isAdmin: admin // admin logged in boolean
                 }
             })
         );
@@ -40,8 +43,7 @@ export function ResetStoredData() {
             type: ActionTypes.GET_DATA_FROM_ASYNCSTORAGE, payload: {
                 'data': {
                     store: {},
-                    isLoggedIn: false,
-                    isAdmin: false
+                    isLoggedIn: false
 
                 }
             }
@@ -51,7 +53,15 @@ export function ResetStoredData() {
     }
 }
 
-
+export function getCurrentUser() {
+    return new Promise((reslove, reject) => {
+        haha.onAuthStateChanged((user) => {
+            if (user) {
+                reslove(user);
+            }
+        });
+    })
+}
 // navigation props save function
 export function setNavigationProps(navigation) {
     return dispatch => {
@@ -59,5 +69,58 @@ export function setNavigationProps(navigation) {
         dispatch({ type: ActionTypes.NAVIGATION_PROPS, payload: navigation }) // save props in reducers in order to access it from anywhere
 
 
+    }
+}
+
+export function setUserData(user) {
+    return dispatch => {
+        console.log('user MIDDLWARE', user)
+
+        dispatch({ type: ActionTypes.SIGN_IN_SUCCESS, payload: true })
+        database.child(`users/${user?.uid}`).set(user).then(() => {
+            dispatch(getCurrentUserData(user?.uid))
+        })
+        // redirect.navigate('home')
+
+    }
+}
+export function getCurrentUserData(uid) {
+    return dispatch => {
+        database.child(`users/${uid}`).on('value', ev => {
+            console.log('current user data', ev.val())
+            dispatch({ type: ActionTypes.SIGN_IN_SUCCESS, payload: false })
+            storeData(ev.val());
+            redirect.navigate('home');
+        })
+
+
+    }
+}
+export function getAllUsers() {
+    return dispatch => {
+        dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: {}, loading: true } })
+
+        database.child(`users`).on('value', ev => {
+            console.log('all users', ev.val())
+            
+            if (ev.val()) {
+                dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: Object.values(ev.val()), loading: false } })
+            } else {
+                dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: {}, loading: false } })
+            }
+
+        })
+
+
+    }
+}
+export function logOut() {
+    return dispatch => {
+        auth().signOut().then(() => {
+            AsyncStorage.clear().then(() => {
+                dispatch(ResetStoredData())
+                redirect.navigate('phoneAuth')
+            })
+        })
     }
 }

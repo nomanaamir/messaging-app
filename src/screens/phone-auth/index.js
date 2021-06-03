@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+// import firebase from 'firebase';
+import auth from '@react-native-firebase/auth';
 import {
     SafeAreaView,
     ScrollView,
@@ -13,7 +15,7 @@ import {
     Button
 } from 'react-native';
 import { connect } from 'react-redux';
-import { setNavigationProps } from '../../Store/Middlewares/middlewares';
+import { setNavigationProps, setUserData } from '../../Store/Middlewares/middlewares';
 const { height, fontScale, width } = Dimensions.get('window')
 import CountryPicker from 'react-native-country-picker-modal'
 
@@ -23,23 +25,89 @@ function PhoneAuth(props) {
     const [emoji, setEmoji] = useState('')
 
 
-    const [country, setCountry] = useState(null)
+    const [country, setCountry] = useState(null);
 
-    const [isOTP, setIsOTP] = useState(false)
+    const [isOTP, setIsOTP] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
+
+    const [confirm, setConfirm] = useState(null);
+
+    const [code, setCode] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [fullName, setFullName] = useState('');
+
+
+
+    const [initializing, setInitializing] = useState(true);
+    // const [user, setUser] = useState();
 
     const { navigation } = props;
 
     const onSelect = (country) => {
-        console.log('country', country.callingCode[0])
+
         setCountryCode(country.cca2)
         setCallingCode('+' + country.callingCode[0])
 
         setCountry(country)
     }
+    // Handle the button press
+    async function signInWithPhoneNumber() {
+        if (
+            phoneNumber === '' ||
+            fullName === ''
+        ) {
+            alert('All fields required!')
+        } else {
+            setIsLoading(true)
+            console.log('number', callingCode + phoneNumber)
+            try {
+                const confirmation = await auth().signInWithPhoneNumber(callingCode + phoneNumber);
+                console.log('confirmation', confirmation);
+                setConfirm(confirmation);
+                setIsOTP(true);
+            } catch (error) {
+                setIsLoading(false)
+
+                alert(error.message)
+            }
+        }
+    }
+    async function confirmCode() {
+        try {
+            await confirm.confirm(code)
+            const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+            return subscriber; // unsubscribe on unmount
+        } catch (error) {
+            alert('Invalid code.');
+        }
+    }
+
+    //   if (!confirm) {
+    //     return (
+    //       <Button
+    //         title="Phone Number Sign In"
+    //         onPress={() => signInWithPhoneNumber('+923233277884')}
+    //       />
+    //     );
+    //   }
+    function onAuthStateChanged(user) {
+        if (user !== null) {
+            console.log('inside', user?.uid)
+            const authUser = {
+                uid: user?.uid,
+                fullName: fullName,
+            }
+
+            props.setUserDataAction(authUser)
+        }
+        // console.log('outside', user !== null ? user?.uid: 'hello')
+        if (initializing) setInitializing(false);
+    }
     useEffect(() => {
-        console.log('window', window)
+        // auth().signOut()
         props.setNavigationPropsAction(navigation);
+
     }, []);
 
 
@@ -66,6 +134,9 @@ function PhoneAuth(props) {
                                         style={[styles.textField, styles.OTPnumber]}
                                         keyboardType='numeric'
                                         placeholder='Enter OTP'
+                                        onChangeText={(text) => setCode(text)}
+                                        value={code}
+                                        placeholderTextColor="#b8babd"
                                     />
                                 </View>
 
@@ -73,11 +144,20 @@ function PhoneAuth(props) {
 
                             <View style={styles.phoneAuthFooter}>
                                 <View style={styles.phoneAuthFooterBtn}>
-                                    <Button
-                                        title='Submit'
-                                        color='#ec8652'
-                                        onPress={() => navigation.navigate('home')}
-                                    />
+
+
+                                    {
+                                        props.authLoading === true ?
+                                            <ActivityIndicator size={40} color="#ec8652" />
+                                            :
+                                            <Button
+                                                title='Submit'
+                                                color='#ec8652'
+                                                onPress={() => confirmCode()}
+                                            />
+                                    }
+
+
                                 </View>
                             </View>
                         </View>
@@ -107,10 +187,12 @@ function PhoneAuth(props) {
 
                                     <TextInput
                                         style={[styles.textField, styles.fullName]}
-                                        // onChangeText={(text)=> setEmoji(text)}
                                         placeholder='Full Name'
+                                        onChangeText={(text) => setFullName(text)}
+                                        placeholderTextColor="#b8babd"
+                                        value={fullName}
                                     />
-                                    {/* <Text>{emoji}</Text> */}
+
                                 </View>
 
                                 <View style={styles.fieldRow}>
@@ -124,8 +206,11 @@ function PhoneAuth(props) {
                                     <TextInput
                                         style={[styles.textField, styles.PHnumber]}
                                         keyboardType='numeric'
-                                        // onChangeText={(text)=> setEmoji(text)}
+                                        onChangeText={(text) => setPhoneNumber(text)}
+                                        value={phoneNumber}
                                         placeholder='Phone number'
+                                        placeholderTextColor="#b8babd"
+
                                     />
                                     {/* <Text>{emoji}</Text> */}
                                 </View>
@@ -134,11 +219,19 @@ function PhoneAuth(props) {
 
                             <View style={styles.phoneAuthFooter}>
                                 <View style={styles.phoneAuthFooterBtn}>
-                                    <Button
-                                        title='Next'
-                                        color='#ec8652'
-                                        onPress={() => setIsOTP(!isOTP)}
-                                    />
+
+                                    {
+                                        isLoading === false ?
+                                            <Button
+                                                title='Next'
+                                                color='#ec8652'
+                                                onPress={() => { signInWithPhoneNumber() }}
+                                            />
+                                            :
+                                            <ActivityIndicator size={40} color="#ec8652" />
+                                    }
+
+
                                 </View>
                             </View>
                         </View>
@@ -190,7 +283,7 @@ const styles = StyleSheet.create({
         color: 'black',
         padding: 4
     },
-    fullName:{
+    fullName: {
         width: '90%'
     },
     CNcode: {
@@ -214,15 +307,16 @@ const styles = StyleSheet.create({
         marginBottom: 10
     }
 });
-
 function mapStateToProps(state) {
-
+    console.log('Redux State - SignIn Screen', state.root.signIn_success)
     return {
+        authLoading: state.root.signIn_success
     }
 }
 function mapDispatchToProps(dispatch) {
     return ({
         setNavigationPropsAction: (navigation) => { dispatch(setNavigationProps(navigation)) },
+        setUserDataAction: (authUser) => { dispatch(setUserData(authUser)) }
     })
 }
-export default connect(null, mapDispatchToProps)(PhoneAuth);
+export default connect(mapStateToProps, mapDispatchToProps)(PhoneAuth);
