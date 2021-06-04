@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import {
   StyleSheet,
-  BackHandler
+  BackHandler,
+  LogBox
 } from 'react-native';
 
 // provider, store
@@ -14,8 +15,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import PhoneAuth from './src/screens/phone-auth/index';
 import Home from './src/screens/home/index';
 import ChatRoom from './src/screens/chat-room/index';
-
-
+import AuthCheckLoaderScreen from './src/screens/auth-check-loader/index'
+LogBox.ignoreLogs(['Setting a timer']);
 
 
 // LogBox.ignoreLogs(['Setting a timer for a long period of time'])
@@ -37,8 +38,12 @@ function App() {
     <Provider store={store}>
       <NavigationContainer>
         <Stack.Navigator>
-
-          <Stack.Screen name="phoneAuth" component={PhoneAuth} options={{ headerShown: false, cardStyleInterpolator: forFade, }} />
+        <Stack.Screen
+            name="authCheckLoaderScreen"
+            component={AuthCheckLoaderScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen name="phoneAuth" component={PhoneAuth} options={{ headerShown: false }} />
           <Stack.Screen name="home" component={Home} options={{ headerShown: false, cardStyleInterpolator: forFade, }} />
           <Stack.Screen name="chatRoom" component={ChatRoom} options={{ headerShown: false, cardStyleInterpolator: forFade, }} />
 

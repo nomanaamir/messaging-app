@@ -18,7 +18,16 @@ function Header(props) {
 
     return (
         <>
-            <View style={styles.centeredView}>
+           
+            <View style={styles.header}>
+                <Text style={styles.headerLogo}>
+                    Chat App
+                </Text>
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                    <Entypo name="dots-three-vertical" size={20} color="black" />
+                </TouchableOpacity>
+            </View>
+            <View>
                 <Modal
                     animationType="fade"
                     transparent={true}
@@ -29,7 +38,7 @@ function Header(props) {
                 >
                     <Pressable style={styles.centeredView} onPress={() => setModalVisible(!modalVisible)}>
                         <View style={styles.modalView}>
-                            <TouchableOpacity style={styles.modalViewList} onPress={() => setModalVisible(!modalVisible)}>
+                            <TouchableOpacity style={styles.modalViewList} onPress={() => { props.signOutClick(); setModalVisible(!modalVisible) }}>
                                 <Text style={styles.modalViewItem}>Logout</Text>
                             </TouchableOpacity>
 
@@ -42,14 +51,6 @@ function Header(props) {
                 </Modal>
             </View>
 
-            <View style={styles.header}>
-                <Text style={styles.headerLogo}>
-                    Chat App
-                </Text>
-                <TouchableOpacity onPress={() => setModalVisible(true)}>
-                    <Entypo name="dots-three-vertical" size={20} color="black" />
-                </TouchableOpacity>
-            </View>
         </>
     );
 };
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
 
     centeredView: {
         flex: 1,
-        // alignItems: "center",
+        // justifyContent: "space-between",
     },
     modalView: {
         backgroundColor: "white",
@@ -90,7 +91,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginLeft: 'auto'
     },
-    modalViewList:{
+    modalViewList: {
         height: 30,
         justifyContent: 'center'
     },
