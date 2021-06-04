@@ -13,8 +13,11 @@ const InitialState = {
     users_list: {
         users: [],
         loading: false
+    },
+    all_msgs: {
+        messages: {},
+        loading: false
     }
-
 }
 
 export default (state = InitialState, action) => {
@@ -31,6 +34,9 @@ export default (state = InitialState, action) => {
 
         case ActionTypes.GET_ALL_USERS:
             return ({ ...state, users_list: action.payload });
+
+        case ActionTypes.GET_MESSAGES:
+            return ({ ...state, all_msgs: action.payload });
 
 
         default:

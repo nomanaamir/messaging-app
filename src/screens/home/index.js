@@ -28,7 +28,16 @@ function Home(props) {
     const signOut = () => {
         props.logOutAction();
     }
+    const chatRoom = (selectedUser, currentUser) => {
+        console.log('currentUser', currentUser)
+        console.log('selectedUser', selectedUser)
 
+        navigation.navigate('chatRoom', {
+            currentUser: currentUser,
+            selectedUser: selectedUser,
+
+        })
+    }
     return (
         <SafeAreaView style={styles.container}>
             <Header signOutClick={signOut} />
@@ -44,7 +53,7 @@ function Home(props) {
                             props.usersList.map((item, index) => {
                                 return (
                                     props.currentUser?.uid !== item.uid ?
-                                        <TouchableOpacity style={styles.userRow} onPress={() => navigation.navigate('chatRoom')} key={index}>
+                                        <TouchableOpacity style={styles.userRow} onPress={() => chatRoom(item, props.currentUser)} key={index}>
                                             <View style={styles.userFrame}>
                                                 <EvilIcons name="user" size={60} color="black" />
                                             </View>

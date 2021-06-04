@@ -5,5 +5,7 @@ export const ActionTypes = {
 
     SIGN_IN_SUCCESS: "SIGN_IN_SUCCESS",
 
-    GET_ALL_USERS: "GET_ALL_USERS"
+    GET_ALL_USERS: "GET_ALL_USERS",
+
+    GET_MESSAGES:"GET_MESSAGES"
 }

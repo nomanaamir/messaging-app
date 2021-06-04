@@ -102,7 +102,7 @@ export function getAllUsers() {
 
         database.child(`users`).on('value', ev => {
             console.log('all users', ev.val())
-            
+
             if (ev.val()) {
                 dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: Object.values(ev.val()), loading: false } })
             } else {
@@ -114,6 +114,42 @@ export function getAllUsers() {
 
     }
 }
+
+export function sendMessageToUser(selectedUser, currentUser, newMessage, time) {
+
+    return dispatch => {
+        const senderObject = {
+            sender: currentUser.uid,
+            message: newMessage,
+            read: false,
+            time: time
+        }
+        console.log('senderObject', senderObject)
+        database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/`).push(senderObject);
+        database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/`).push(senderObject);
+
+    }
+}
+
+export function getMessages(currentUser) {
+    return dispatch => {
+        dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: true } })
+
+        database.child(`msgs/${currentUser.uid}`).on('value', ev => {
+            console.log('middleware all msgs', ev.val())
+
+            if (ev.val()) {
+                dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: ev.val(), loading: false } })
+            } else {
+                dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: false } })
+            }
+
+        })
+
+
+    }
+}
+
 export function logOut() {
     return dispatch => {
         auth().signOut().then(() => {
