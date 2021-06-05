@@ -17,6 +17,10 @@ const InitialState = {
     all_msgs: {
         messages: {},
         loading: false
+    },
+    selected_user_all_msgs:{
+        messages: {},
+        loading: false
     }
 }
 
@@ -38,7 +42,10 @@ export default (state = InitialState, action) => {
         case ActionTypes.GET_MESSAGES:
             return ({ ...state, all_msgs: action.payload });
 
+        case ActionTypes.GET_SELECTED_USER_MESSAGES:
+            return ({ ...state, selected_user_all_msgs: action.payload });
 
+            
         default:
             return state;
     }

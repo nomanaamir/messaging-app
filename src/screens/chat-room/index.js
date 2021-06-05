@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 const { height, fontScale, width } = Dimensions.get('window')
 import { connect } from 'react-redux';
-import { sendMessageToUser, getMessages, markMsgsToRead } from '../../Store/Middlewares/middlewares';
+import { sendMessageToUser, getMessages, markMsgsToRead, getSelectedUserMessages } from '../../Store/Middlewares/middlewares';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -28,6 +28,8 @@ function ChatRoom(props) {
 
     const [typeMsg, setTypeMsg] = useState('');
     const [userMsgs, setUserMsgs] = useState([]);
+    const [selectedUserMsgs, setSelectedUserMsgs] = useState([]);
+
 
 
 
@@ -37,11 +39,20 @@ function ChatRoom(props) {
     const scrollViewRef = useRef();
     useEffect(() => {
         props.getMessagesAction(currentUser);
+    
+
         // console.log('props.messages', props.messages)
         // console.log('  props.messages[selectedUser.uid]', props.messages[selectedUser.uid])
 
     }, [props.isLoading]);
+    useEffect(() => {
 
+        props.getSelectedUserMessagesAction(selectedUser);
+
+        // console.log('props.messages', props.messages)
+        // console.log('  props.messages[selectedUser.uid]', props.messages[selectedUser.uid])
+
+    }, [props.selectedUserMessagesLoading]);
 
     useEffect(() => {
 
@@ -55,8 +66,24 @@ function ChatRoom(props) {
         }
         setUserMsgs(msgsArray)
         // console.log('msgs', msgsArray);
-        markMsgsRead()
+        // markMsgsRead()
     }, [props.messages]);
+
+    useEffect(() => {
+        let obj = {};
+        let msgsArray = []
+        for (let key in props.selectedUserMessages[currentUser.uid]) {
+            if (props.selectedUserMessages[currentUser.uid].hasOwnProperty(key)) {
+                obj = Object.assign({}, props.selectedUserMessages[currentUser.uid][key], { msgKey: key })
+                msgsArray.push(obj)
+            }
+        }
+        console.log(']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]', msgsArray)
+        setSelectedUserMsgs(msgsArray)
+        // console.log('msgs', msgsArray);
+        markMsgsRead()
+    }, [props.selectedUserMessages]);
+
     const formatAMPM = (date) => {
         var hours = date.getHours();
         var minutes = date.getMinutes();
@@ -114,8 +141,8 @@ function ChatRoom(props) {
 
     }
     const markMsgsRead = () => {
-        const getSelectedUsersMsgs = userMsgs.filter(a => {
-            return a.sender === currentUser?.uid && a.read === false
+        const getSelectedUsersMsgs = selectedUserMsgs.filter(a => {
+            return a.sender === selectedUser?.uid
         })
         if (getSelectedUsersMsgs.length > 0) {
             getSelectedUsersMsgs.forEach((i => {
@@ -384,10 +411,13 @@ const styles = StyleSheet.create({
 
 
 function mapStateToProps(state) {
-    // console.log('Redux State - Chat Room Screen', state.root.all_msgs)
+    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.selected_user_all_msgs?.messages)
     return {
         messages: state.root.all_msgs?.messages,
         isLoading: state.root.all_msgs?.loading,
+        selectedUserMessages: state.root.selected_user_all_msgs?.messages,
+        selectedUserMessagesLoading: state.root.selected_user_all_msgs?.loading,
+
 
     }
 }
@@ -395,6 +425,7 @@ function mapDispatchToProps(dispatch) {
     return ({
         sendMessageToUserAction: (selectedUser, currentUser, newMessage, time) => { dispatch(sendMessageToUser(selectedUser, currentUser, newMessage, time)) },
         getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) },
+        getSelectedUserMessagesAction: (selectedUser) => { dispatch(getSelectedUserMessages(selectedUser)) },
         markMsgsToReadAction: (selectedUser, currentUser, msgKey) => { dispatch(markMsgsToRead(selectedUser, currentUser, msgKey)) },
     })
 }

@@ -43,7 +43,7 @@ function Home(props) {
         let msgsArray = Object.values(props.messages[uid] || {});
         let lastIndex = msgsArray.length - 1;
         console.log('lastIndex', msgsArray[lastIndex]);
-        return msgsArray[lastIndex]?.message || "let's chat"
+        return msgsArray[lastIndex]?.message || "chat"
         // const filterUserMsgs = msgsArray.filter(a => {
         //     return a.sender === uid
         // });
