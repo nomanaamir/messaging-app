@@ -131,6 +131,15 @@ export function sendMessageToUser(selectedUser, currentUser, newMessage, time) {
     }
 }
 
+export function markMsgsToRead(selectedUser, currentUser, msgKey) {
+
+    return dispatch => {
+        database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/${msgKey}`).update({ read: true });
+        // database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/${msgKey}`).update({ read: true });
+
+    }
+}
+
 export function getMessages(currentUser) {
     return dispatch => {
         dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: true } })
@@ -142,6 +151,25 @@ export function getMessages(currentUser) {
                 dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: ev.val(), loading: false } })
             } else {
                 dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: false } })
+            }
+
+        })
+
+
+    }
+}
+
+export function getSelectedUserMessages(selectedUser) {
+    return dispatch => {
+        dispatch({ type: ActionTypes.GET_SELECTED_USER_MESSAGES, payload: { messages: {}, loading: true } })
+
+        database.child(`msgs/${selectedUser.uid}`).on('value', ev => {
+            console.log('HAHAHAHA', ev.val())
+
+            if (ev.val()) {
+                dispatch({ type: ActionTypes.GET_SELECTED_USER_MESSAGES, payload: { messages: ev.val(), loading: false } })
+            } else {
+                dispatch({ type: ActionTypes.GET_SELECTED_USER_MESSAGES, payload: { messages: {}, loading: false } })
             }
 
         })

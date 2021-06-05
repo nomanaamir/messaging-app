@@ -10,7 +10,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { logOut, getAllUsers, RetrieveDataAssyncStorage } from '../../Store/Middlewares/middlewares';
+import { logOut, getAllUsers, RetrieveDataAssyncStorage, getMessages } from '../../Store/Middlewares/middlewares';
 const { height, fontScale, width } = Dimensions.get('window')
 import { connect } from 'react-redux';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -23,6 +23,7 @@ function Home(props) {
     useEffect(() => {
         props.getAllUsersAction();
         props.RetrieveDataAssyncStorageAction();
+        props.getMessagesAction(props.currentUser);
     }, [props.isLoading]);
 
     const signOut = () => {
@@ -37,6 +38,27 @@ function Home(props) {
             selectedUser: selectedUser,
 
         })
+    }
+    const getLastMsg = (uid) => {
+        let msgsArray = Object.values(props.messages[uid] || {});
+        let lastIndex = msgsArray.length - 1;
+        console.log('lastIndex', msgsArray[lastIndex]);
+        return msgsArray[lastIndex]?.message || "chat"
+        // const filterUserMsgs = msgsArray.filter(a => {
+        //     return a.sender === uid
+        // });
+        // console.log('filterUserMsgs', filterUserMsgs)
+    }
+
+    const getLastMsgTime = (uid) => {
+        let msgsArray = Object.values(props.messages[uid] || {});
+        let lastIndex = msgsArray.length - 1;
+        console.log('lastIndex', msgsArray[lastIndex]);
+        return msgsArray[lastIndex]?.time || ""
+        // const filterUserMsgs = msgsArray.filter(a => {
+        //     return a.sender === uid
+        // });
+        // console.log('filterUserMsgs', filterUserMsgs)
     }
     return (
         <SafeAreaView style={styles.container}>
@@ -65,12 +87,12 @@ function Home(props) {
 
                                                 <View style={{ width: '80%' }}>
                                                     <Text style={styles.lastMsg} numberOfLines={1}>
-                                                        Hi, how are you?
-                                                    {/* {props.currentUser?.uid} */}
+                                                        {getLastMsg(item.uid)}
+                                                        {/* {props.currentUser?.uid} */}
                                                     </Text>
                                                 </View>
                                             </View>
-                                            <Text style={styles.time}>7:00 PM</Text>
+                                            <Text style={styles.time}>{getLastMsgTime(item.uid)}</Text>
                                         </TouchableOpacity>
                                         :
                                         null
@@ -129,14 +151,15 @@ function mapStateToProps(state) {
         usersList: state.root.users_list?.users,
         isLoading: state.root.users_list?.loading,
         currentUser: state.root.async_storage_data.data?.store,
-
+        messages: state.root.all_msgs?.messages,
     }
 }
 function mapDispatchToProps(dispatch) {
     return ({
         logOutAction: () => { dispatch(logOut()) },
         getAllUsersAction: () => { dispatch(getAllUsers()) },
-        RetrieveDataAssyncStorageAction: () => { dispatch(RetrieveDataAssyncStorage()) }
+        RetrieveDataAssyncStorageAction: () => { dispatch(RetrieveDataAssyncStorage()) },
+        getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) }
     })
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
