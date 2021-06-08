@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 const { height, fontScale, width } = Dimensions.get('window')
 import { connect } from 'react-redux';
-import { sendMessageToUser, getMessages, markMsgsToRead, getSelectedUserMessages } from '../../Store/Middlewares/middlewares';
+import { sendMessageToUser, getMessages, markMsgsToRead, getSelectedUserMessages, blockUser, getBlockedUsers, unBlockUser } from '../../Store/Middlewares/middlewares';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -39,7 +39,7 @@ function ChatRoom(props) {
     const scrollViewRef = useRef();
     useEffect(() => {
         props.getMessagesAction(currentUser);
-    
+        props.getBlockedUsersAction(currentUser)
 
         // console.log('props.messages', props.messages)
         // console.log('  props.messages[selectedUser.uid]', props.messages[selectedUser.uid])
@@ -154,6 +154,53 @@ function ChatRoom(props) {
         }
         console.log('getSelectedUsersMsgs', getSelectedUsersMsgs)
     }
+
+    const getFooter = () => {
+        console.log('props.blockedUsers', props.blockedUsers)
+        if (props.blockedUsers.some((a) => (a.blockedUser === selectedUser?.uid) || (a.blockByUID === selectedUser?.uid))) {
+            return <View style={styles.fieldRow}>
+                <Text style={styles.blockText}>Blocked!</Text>
+            </View>
+        } else {
+            return <View style={styles.fieldRow}>
+
+                <TextInput
+                    style={styles.textField}
+                    placeholder='Type a msg'
+                    onChangeText={(text) => setTypeMsg(text)}
+                    onPressIn={() => scrollViewRef.current.scrollToEnd({ animated: true })}
+                    onPressOut={() => scrollViewRef.current.scrollToEnd({ animated: true })}
+                    value={typeMsg}
+                />
+
+                <TouchableOpacity style={styles.msgSendBtn} onPress={() => sendMsg()}>
+                    <MaterialIcons name="send" size={24} color="white" />
+                </TouchableOpacity>
+            </View>
+
+        }
+    }
+
+    const blockStateBtns = () => {
+        if (props.blockedUsers.some((a) => a.blockedUser === selectedUser?.uid)) {
+            return <TouchableOpacity style={styles.modalViewList} onPress={() => { props.unBlockUserAction(selectedUser, currentUser); setModalVisible(!modalVisible) }}>
+                <Text style={styles.deleteAcc}>Un Block</Text>
+            </TouchableOpacity>
+        } else {
+            return <TouchableOpacity style={styles.modalViewList} onPress={() => { props.blockUserAction(selectedUser, currentUser); setModalVisible(!modalVisible) }}>
+                <Text style={styles.deleteAcc}>Block</Text>
+            </TouchableOpacity>
+        }
+    }
+    const getThreeDotsBlockIcon = () => {
+        if (props.blockedUsers.some((a) => (a.blockedUser === currentUser?.uid) && (a.blockByUID === selectedUser?.uid))) {
+            return null
+        } else {
+            return <TouchableOpacity onPress={() => setModalVisible(true)}>
+                <Entypo name="dots-three-vertical" size={20} color="black" />
+            </TouchableOpacity>
+        }
+    }
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.roomHeader}>
@@ -179,9 +226,8 @@ function ChatRoom(props) {
                                 </TouchableOpacity>
                             </View>
                             :
-                            <TouchableOpacity onPress={() => setModalVisible(true)}>
-                                <Entypo name="dots-three-vertical" size={20} color="black" />
-                            </TouchableOpacity>
+                            getThreeDotsBlockIcon()
+
 
                     }
                 </View>
@@ -204,12 +250,11 @@ function ChatRoom(props) {
                     >
                         <Pressable style={styles.centeredView} onPress={() => setModalVisible(!modalVisible)}>
                             <View style={styles.modalView}>
-                                <TouchableOpacity style={styles.modalViewList} onPress={() => setModalVisible(!modalVisible)}>
-                                    <Text style={styles.deleteAcc}>Block</Text>
-                                </TouchableOpacity>
+                                {blockStateBtns()}
 
                             </View>
                         </Pressable>
+
                     </Modal>
                 </View>
 
@@ -232,21 +277,9 @@ function ChatRoom(props) {
             </ScrollView>
 
             <View style={styles.roomForm}>
-                <View style={styles.fieldRow}>
 
-                    <TextInput
-                        style={styles.textField}
-                        placeholder='Type a msg'
-                        onChangeText={(text) => setTypeMsg(text)}
-                        onPressIn={() => scrollViewRef.current.scrollToEnd({ animated: true })}
-                        onPressOut={() => scrollViewRef.current.scrollToEnd({ animated: true })}
-                        value={typeMsg}
-                    />
+                {getFooter()}
 
-                    <TouchableOpacity style={styles.msgSendBtn} onPress={() => sendMsg()}>
-                        <MaterialIcons name="send" size={24} color="white" />
-                    </TouchableOpacity>
-                </View>
             </View>
         </SafeAreaView >
     );
@@ -296,6 +329,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: height / 10
 
+    },
+    blockText: {
+        fontSize: fontScale * 15,
+        fontStyle: 'italic',
+        color: '#DC3A16'
     },
     textField: {
         borderColor: '#ec8652',
@@ -411,12 +449,13 @@ const styles = StyleSheet.create({
 
 
 function mapStateToProps(state) {
-    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.selected_user_all_msgs?.messages)
+    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.blocked_users)
     return {
         messages: state.root.all_msgs?.messages,
         isLoading: state.root.all_msgs?.loading,
         selectedUserMessages: state.root.selected_user_all_msgs?.messages,
         selectedUserMessagesLoading: state.root.selected_user_all_msgs?.loading,
+        blockedUsers: state.root.blocked_users,
 
 
     }
@@ -427,6 +466,11 @@ function mapDispatchToProps(dispatch) {
         getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) },
         getSelectedUserMessagesAction: (selectedUser) => { dispatch(getSelectedUserMessages(selectedUser)) },
         markMsgsToReadAction: (selectedUser, currentUser, msgKey) => { dispatch(markMsgsToRead(selectedUser, currentUser, msgKey)) },
+        blockUserAction: (selectedUser, currentUser) => { dispatch(blockUser(selectedUser, currentUser)) },
+        getBlockedUsersAction: (currentUser) => { dispatch(getBlockedUsers(currentUser)) },
+        unBlockUserAction: (selectedUser, currentUser) => { dispatch(unBlockUser(selectedUser, currentUser)) },
+
+
     })
 }
 export default connect(mapStateToProps, mapDispatchToProps)(ChatRoom);

@@ -178,6 +178,50 @@ export function getSelectedUserMessages(selectedUser) {
     }
 }
 
+export function blockUser(selectedUser, currentUser) {
+
+    return dispatch => {
+        const blockedUser = { blockBy: currentUser.fullName, blockByUID: currentUser.uid, blockedUser: selectedUser.uid }
+
+        // database.child(`blockedUsers/${selectedUser.uid}`).push(blockedUser);
+        // database.child(`blockedUsers/${currentUser.uid}`).push(blockedUser);
+
+        database.child(`blockedUsers/${selectedUser.uid}/${currentUser.uid}/`).set(blockedUser);
+        database.child(`blockedUsers/${currentUser.uid}/${selectedUser.uid}/`).set(blockedUser);
+
+    }
+}
+
+export function unBlockUser(selectedUser, currentUser) {
+
+    return dispatch => {
+
+        database.child(`blockedUsers/${selectedUser.uid}/${currentUser.uid}/`).remove();
+        database.child(`blockedUsers/${currentUser.uid}/${selectedUser.uid}/`).remove();
+
+    }
+}
+
+
+export function getBlockedUsers(currentUser) {
+
+    return dispatch => {
+        // dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: true } })
+
+        database.child(`blockedUsers/${currentUser.uid}`).on('value', ev => {
+
+            if (ev.val()) {
+                dispatch({ type: ActionTypes.GET_BLOCKED_USERS, payload: Object.values(ev.val()) })
+            } else {
+                dispatch({ type: ActionTypes.GET_BLOCKED_USERS, payload: [] })
+            }
+
+        })
+
+
+    }
+}
+
 export function logOut() {
     return dispatch => {
         auth().signOut().then(() => {

@@ -18,10 +18,11 @@ const InitialState = {
         messages: {},
         loading: false
     },
-    selected_user_all_msgs:{
+    selected_user_all_msgs: {
         messages: {},
         loading: false
-    }
+    },
+    blocked_users: []
 }
 
 export default (state = InitialState, action) => {
@@ -45,7 +46,10 @@ export default (state = InitialState, action) => {
         case ActionTypes.GET_SELECTED_USER_MESSAGES:
             return ({ ...state, selected_user_all_msgs: action.payload });
 
-            
+        case ActionTypes.GET_BLOCKED_USERS:
+            return ({ ...state, blocked_users: action.payload });
+
+
         default:
             return state;
     }
