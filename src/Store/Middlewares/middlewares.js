@@ -202,6 +202,16 @@ export function unBlockUser(selectedUser, currentUser) {
     }
 }
 
+export function deleteMessage(selectedUser, currentUser, selectedUserMsgKey, currentUserMsgKey) {
+
+    return dispatch => {
+
+        database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/${selectedUserMsgKey}`).remove();
+        database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/${currentUserMsgKey}`).remove();
+
+    }
+}
+
 
 export function getBlockedUsers(currentUser) {
 

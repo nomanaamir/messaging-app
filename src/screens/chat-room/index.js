@@ -11,9 +11,10 @@ import {
     Modal,
     Pressable,
 } from 'react-native';
+import Clipboard from '@react-native-clipboard/clipboard';
 const { height, fontScale, width } = Dimensions.get('window')
 import { connect } from 'react-redux';
-import { sendMessageToUser, getMessages, markMsgsToRead, getSelectedUserMessages, blockUser, getBlockedUsers, unBlockUser } from '../../Store/Middlewares/middlewares';
+import { sendMessageToUser, getMessages, markMsgsToRead, getSelectedUserMessages, blockUser, getBlockedUsers, unBlockUser, deleteMessage } from '../../Store/Middlewares/middlewares';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
@@ -29,6 +30,11 @@ function ChatRoom(props) {
     const [typeMsg, setTypeMsg] = useState('');
     const [userMsgs, setUserMsgs] = useState([]);
     const [selectedUserMsgs, setSelectedUserMsgs] = useState([]);
+    const [currentUserMsg, setCurrentUserMsg] = useState({});
+    const [selectedUserMsg, setSelectedUserMsg] = useState({});
+
+    const [isCopy, setIsCopy] = useState(false);
+
 
 
 
@@ -83,7 +89,15 @@ function ChatRoom(props) {
         // console.log('msgs', msgsArray);
         markMsgsRead()
     }, [props.selectedUserMessages]);
+    const copyToClipboard = () => {
+        Clipboard.setString(currentUserMsg.message);
+        setMsgAction(false)
+        setIsCopy(true);
+        setTimeout(() => {
+            setIsCopy(false);
 
+        }, 800);
+    };
     const formatAMPM = (date) => {
         var hours = date.getHours();
         var minutes = date.getMinutes();
@@ -103,9 +117,16 @@ function ChatRoom(props) {
         props.sendMessageToUserAction(selectedUser, currentUser, typeMsg, formatAMPM(new Date))
         setTypeMsg('')
     }
+    const deleteMsg = () => {
+        console.log('currentUserMsg', currentUserMsg);
+
+        console.log('selectedUserMsg', selectedUserMsg);
+        props.deleteMessageAction(selectedUser, currentUser, selectedUserMsg.msgKey, currentUserMsg.msgKey)
+        setMsgAction(false)
+    }
     const getMsgs = (item, index) => {
         if (item.sender === currentUser?.uid) {
-            return <TouchableOpacity style={[styles.msg, styles.sender]} onPress={() => console.log(item)} key={index}>
+            return <TouchableOpacity style={[styles.msg, styles.sender]} onPress={() => { setMsgAction(!msgAction); setSelectedUserMsg(selectedUserMsgs[index]); setCurrentUserMsg(item) }} key={index}>
 
                 <Text style={[styles.msgText, styles.senderMsgText]}>
                     {item.message}
@@ -156,7 +177,7 @@ function ChatRoom(props) {
     }
 
     const getFooter = () => {
-        console.log('props.blockedUsers', props.blockedUsers)
+        // console.log('props.blockedUsers', props.blockedUsers)
         if (props.blockedUsers.some((a) => (a.blockedUser === selectedUser?.uid) || (a.blockByUID === selectedUser?.uid))) {
             return <View style={styles.fieldRow}>
                 <Text style={styles.blockText}>Blocked!</Text>
@@ -203,6 +224,11 @@ function ChatRoom(props) {
     }
     return (
         <SafeAreaView style={styles.container}>
+            {
+                isCopy ?
+                    <Text style={styles.copiedText}>Copied</Text>
+                     : null
+             }
             <View style={styles.roomHeader}>
                 <TouchableOpacity style={styles.roomHeaderCol1} onPress={() => navigation.goBack()}>
                     <MaterialIcons name="arrow-back" size={30} color="#ec8652" />
@@ -215,10 +241,10 @@ function ChatRoom(props) {
                     {
                         msgAction ?
                             <View style={{ flexDirection: 'row', alignItems: 'center', width: 100, justifyContent: 'space-between' }}>
-                                <TouchableOpacity onPress={() => setMsgAction(false)}>
+                                <TouchableOpacity onPress={() => deleteMsg()}>
                                     <Feather name="trash" size={20} color="red" />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setMsgAction(false)}>
+                                <TouchableOpacity onPress={() => copyToClipboard()}>
                                     <Feather name="copy" size={20} color="black" />
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => setMsgAction(false)}>
@@ -290,6 +316,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         flex: 1,
     },
+    copiedText: { position: 'absolute', color: 'grey', left: width / 2 - 30, bottom: height / 3 - 20, fontSize: fontScale * 14, zIndex: 99 },
     userRow: {
         flexDirection: 'row',
         // backgroundColor: 'grey',
@@ -383,8 +410,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderTopRightRadius: 0,
-        marginTop: 0,
-        marginBottom: 0,
+        // marginTop: 0,
+        // marginBottom: 0,
         marginRight: 0,
         // alignItems: 'flex-end',
         marginLeft: 'auto'
@@ -469,7 +496,7 @@ function mapDispatchToProps(dispatch) {
         blockUserAction: (selectedUser, currentUser) => { dispatch(blockUser(selectedUser, currentUser)) },
         getBlockedUsersAction: (currentUser) => { dispatch(getBlockedUsers(currentUser)) },
         unBlockUserAction: (selectedUser, currentUser) => { dispatch(unBlockUser(selectedUser, currentUser)) },
-
+        deleteMessageAction: (selectedUser, currentUser, selectedUserMsgKey, currentUserMsgKey) => { dispatch(deleteMessage(selectedUser, currentUser, selectedUserMsgKey, currentUserMsgKey)) }
 
     })
 }
