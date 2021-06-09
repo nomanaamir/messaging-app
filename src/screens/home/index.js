@@ -10,7 +10,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { logOut, getAllUsers, RetrieveDataAssyncStorage, getMessages } from '../../Store/Middlewares/middlewares';
+import { logOut, getAllUsers, RetrieveDataAssyncStorage, getMessages, deleteCurrentUserMessagesNode, deleteCurrentUserInfo, deleteAccount } from '../../Store/Middlewares/middlewares';
 const { height, fontScale, width } = Dimensions.get('window')
 import { connect } from 'react-redux';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -28,6 +28,20 @@ function Home(props) {
 
     const signOut = () => {
         props.logOutAction();
+    }
+    const deleteUserAccount = () => {
+        const getUsers = props.usersList.filter(item => {
+            return item.uid !== props.currentUser?.uid
+        });
+        console.log('getUsers', getUsers);
+        console.log('currentUSer', props.currentUser);
+
+        getUsers.forEach(item => {
+            props.deleteCurrentUserMessagesNodeAction(item, props.currentUser)
+        });
+        props.deleteCurrentUserInfoAction(props.currentUser);
+        props.deleteAccountAction();
+
     }
     const chatRoom = (selectedUser, currentUser) => {
         console.log('currentUser', currentUser)
@@ -62,7 +76,7 @@ function Home(props) {
     }
     return (
         <SafeAreaView style={styles.container}>
-            <Header signOutClick={signOut} />
+            <Header signOutClick={signOut} deleteUserAccountClick={deleteUserAccount} />
             <ScrollView
                 contentInsetAdjustmentBehavior="automatic"
             >
@@ -159,7 +173,14 @@ function mapDispatchToProps(dispatch) {
         logOutAction: () => { dispatch(logOut()) },
         getAllUsersAction: () => { dispatch(getAllUsers()) },
         RetrieveDataAssyncStorageAction: () => { dispatch(RetrieveDataAssyncStorage()) },
-        getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) }
+        getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) },
+        deleteCurrentUserMessagesNodeAction: (selectedUser, currentUser) => { dispatch(deleteCurrentUserMessagesNode(selectedUser, currentUser)) },
+        deleteCurrentUserInfoAction: (currentUser) => { dispatch(deleteCurrentUserInfo(currentUser)) },
+        deleteAccountAction: () => { dispatch(deleteAccount()) },
+
+
+
+
     })
 }
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

@@ -18,7 +18,7 @@ function Header(props) {
 
     return (
         <>
-           
+
             <View style={styles.header}>
                 <Text style={styles.headerLogo}>
                     Chat App
@@ -38,11 +38,11 @@ function Header(props) {
                 >
                     <Pressable style={styles.centeredView} onPress={() => setModalVisible(!modalVisible)}>
                         <View style={styles.modalView}>
-                            <TouchableOpacity style={styles.modalViewList} onPress={() => { props.signOutClick(); setModalVisible(!modalVisible) }}>
+                            {/* <TouchableOpacity style={styles.modalViewList} onPress={() => { props.signOutClick(); setModalVisible(!modalVisible) }}>
                                 <Text style={styles.modalViewItem}>Logout</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
-                            <TouchableOpacity style={styles.modalViewList} onPress={() => setModalVisible(!modalVisible)}>
+                            <TouchableOpacity style={styles.modalViewList} onPress={() => { props.deleteUserAccountClick(); setModalVisible(!modalVisible) }}>
                                 <Text style={styles.deleteAcc}>Delete Account</Text>
                             </TouchableOpacity>
 

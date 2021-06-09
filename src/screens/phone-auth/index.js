@@ -65,6 +65,7 @@ function PhoneAuth(props) {
                 const confirmation = await auth().signInWithPhoneNumber(callingCode + phoneNumber);
                 console.log('confirmation', confirmation);
                 setConfirm(confirmation);
+                setIsLoading(false)
                 setIsOTP(true);
             } catch (error) {
                 setIsLoading(false)
@@ -72,6 +73,8 @@ function PhoneAuth(props) {
                 alert(error.message)
             }
         }
+        setPhoneNumber('');
+        setFullName('');
     }
     async function confirmCode() {
         try {
@@ -81,6 +84,8 @@ function PhoneAuth(props) {
         } catch (error) {
             alert('Invalid code.');
         }
+        
+        setCode('');
     }
 
     //   if (!confirm) {
@@ -99,7 +104,8 @@ function PhoneAuth(props) {
                 fullName: fullName,
             }
 
-            props.setUserDataAction(authUser)
+            props.setUserDataAction(authUser);
+            setIsOTP(false);
         }
         // console.log('outside', user !== null ? user?.uid: 'hello')
         if (initializing) setInitializing(false);

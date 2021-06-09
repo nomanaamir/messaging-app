@@ -242,3 +242,42 @@ export function logOut() {
         })
     }
 }
+
+
+export function deleteAccount() {
+
+    return dispatch => {
+        var user = auth().currentUser;
+        console.log('Deleted User', user)
+        user.delete().then(function () {
+            AsyncStorage.clear().then(() => {
+                dispatch(ResetStoredData())
+                alert('Account Deleted!')
+                redirect.navigate('phoneAuth')
+            })
+
+            // User deleted.
+        }).catch(function (error) {
+            alert(error)
+        });
+
+    }
+}
+
+export function deleteCurrentUserInfo(currentUser) {
+    return dispatch => {
+
+        database.child(`users/${currentUser?.uid}`).remove()
+
+    }
+}
+
+export function deleteCurrentUserMessagesNode(selectedUser, currentUser) {
+
+    return dispatch => {
+
+        database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/`).remove();
+        database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/`).remove();
+
+    }
+}
