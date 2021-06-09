@@ -19,7 +19,6 @@ import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import Header from '../../components/header/index';
 function Home(props) {
     const { navigation } = props;
-
     useEffect(() => {
         props.getAllUsersAction();
         props.RetrieveDataAssyncStorageAction();
@@ -46,7 +45,6 @@ function Home(props) {
     const chatRoom = (selectedUser, currentUser) => {
         console.log('currentUser', currentUser)
         console.log('selectedUser', selectedUser)
-
         navigation.navigate('chatRoom', {
             currentUser: currentUser,
             selectedUser: selectedUser,
@@ -74,6 +72,15 @@ function Home(props) {
         // });
         // console.log('filterUserMsgs', filterUserMsgs)
     }
+    const getSortedUsers = () => {
+        let data = props.usersList;
+        data = data.filter(item => item.uid !== props.selectedRoomUser.uid);
+        if (props.selectedRoomUser?.fullName) {
+            data.unshift(props.selectedRoomUser);
+        }
+        return data
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <Header signOutClick={signOut} deleteUserAccountClick={deleteUserAccount} />
@@ -86,7 +93,7 @@ function Home(props) {
                         props.isLoading === true ?
                             <ActivityIndicator size={100} color="#ec8652" />
                             :
-                            props.usersList.map((item, index) => {
+                            getSortedUsers().map((item, index) => {
                                 return (
                                     props.currentUser?.uid !== item.uid ?
                                         <TouchableOpacity style={styles.userRow} onPress={() => chatRoom(item, props.currentUser)} key={index}>
@@ -166,6 +173,7 @@ function mapStateToProps(state) {
         isLoading: state.root.users_list?.loading,
         currentUser: state.root.async_storage_data.data?.store,
         messages: state.root.all_msgs?.messages,
+        selectedRoomUser: state.root.msg_sent
     }
 }
 function mapDispatchToProps(dispatch) {

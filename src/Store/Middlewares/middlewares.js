@@ -124,6 +124,7 @@ export function sendMessageToUser(selectedUser, currentUser, newMessage, time) {
             read: false,
             time: time
         }
+        dispatch({ type: ActionTypes.LATEST_MSG_SENT, payload: selectedUser })
         console.log('senderObject', senderObject)
         database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/`).push(senderObject);
         database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/`).push(senderObject);

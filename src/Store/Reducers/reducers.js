@@ -22,7 +22,8 @@ const InitialState = {
         messages: {},
         loading: false
     },
-    blocked_users: []
+    blocked_users: [],
+    msg_sent: { fullName: '', uid: '' }
 }
 
 export default (state = InitialState, action) => {
@@ -49,6 +50,8 @@ export default (state = InitialState, action) => {
         case ActionTypes.GET_BLOCKED_USERS:
             return ({ ...state, blocked_users: action.payload });
 
+        case ActionTypes.LATEST_MSG_SENT:
+            return ({ ...state, msg_sent: action.payload });
 
         default:
             return state;
