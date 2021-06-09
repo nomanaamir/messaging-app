@@ -20,11 +20,15 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import EvilIcons from 'react-native-vector-icons/EvilIcons';
+
 
 
 
 function ChatRoom(props) {
     const [modalVisible, setModalVisible] = useState(false);
+    const [forwardModal, setForwardModal] = useState(false);
+
     const [msgAction, setMsgAction] = useState(false);
 
     const [typeMsg, setTypeMsg] = useState('');
@@ -32,6 +36,8 @@ function ChatRoom(props) {
     const [selectedUserMsgs, setSelectedUserMsgs] = useState([]);
     const [currentUserMsg, setCurrentUserMsg] = useState({});
     const [selectedUserMsg, setSelectedUserMsg] = useState({});
+    const [forwardUser, setForwardUser] = useState({});
+
 
     const [isCopy, setIsCopy] = useState(false);
 
@@ -222,13 +228,23 @@ function ChatRoom(props) {
             </TouchableOpacity>
         }
     }
+    const forwardMsg = () => {
+        if (forwardUser?.fullName) {
+            props.sendMessageToUserAction(forwardUser, currentUser, currentUserMsg.message, formatAMPM(new Date));
+            setForwardUser({});
+            setForwardModal(false);
+            navigation.navigate('home')
+        }else{
+            alert('Please select a user')
+        }
+    }
     return (
         <SafeAreaView style={styles.container}>
             {
                 isCopy ?
                     <Text style={styles.copiedText}>Copied</Text>
-                     : null
-             }
+                    : null
+            }
             <View style={styles.roomHeader}>
                 <TouchableOpacity style={styles.roomHeaderCol1} onPress={() => navigation.goBack()}>
                     <MaterialIcons name="arrow-back" size={30} color="#ec8652" />
@@ -247,7 +263,7 @@ function ChatRoom(props) {
                                 <TouchableOpacity onPress={() => copyToClipboard()}>
                                     <Feather name="copy" size={20} color="black" />
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => setMsgAction(false)}>
+                                <TouchableOpacity onPress={() => { setForwardModal(true); setMsgAction(false) }}>
                                     <Feather name="corner-up-right" size={20} color="black" />
                                 </TouchableOpacity>
                             </View>
@@ -278,6 +294,76 @@ function ChatRoom(props) {
                             <View style={styles.modalView}>
                                 {blockStateBtns()}
 
+                            </View>
+                        </Pressable>
+
+                    </Modal>
+
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={forwardModal}
+                        onRequestClose={() => {
+                            setForwardModal(!forwardModal);
+                        }}
+                    >
+                        <Pressable style={styles.centeredView}>
+                            <View style={styles.forwardModalView}>
+
+                                <View style={styles.roomHeader}>
+                                    <TouchableOpacity style={styles.roomHeaderCol1} onPress={() => setForwardModal(false)}>
+                                        <MaterialIcons name="arrow-back" size={30} color="#ec8652" />
+                                        <Text style={styles.userName}>
+                                            Forward to
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                </View>
+
+                                <ScrollView
+                                    contentInsetAdjustmentBehavior="automatic"
+                                >
+
+                                    <View>
+                                        {
+
+                                            props.usersList.map((item, index) => {
+                                                return (
+                                                    currentUser?.uid !== item.uid ?
+                                                        <TouchableOpacity style={styles.userListRow} onPress={() => setForwardUser(item)} key={index}>
+                                                            <View style={styles.userFrame}>
+                                                                <EvilIcons name="user" size={60} color="black" />
+                                                            </View>
+
+                                                            <View style={{ width: '80%' }}>
+                                                                <Text style={[styles.userListName, forwardUser.uid === item.uid ? styles.forwardUserActive : null]}>
+                                                                    {item.fullName}
+                                                                </Text>
+
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                        :
+                                                        null
+
+                                                )
+                                            })
+                                        }
+
+                                    </View>
+
+
+                                </ScrollView>
+
+                                <View style={styles.roomForm}>
+
+                                    <View style={styles.forwardFieldRow}>
+
+                                        <TouchableOpacity style={styles.msgSendBtn} onPress={() => forwardMsg()}>
+                                            <MaterialIcons name="send" size={24} color="white" />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                </View>
                             </View>
                         </Pressable>
 
@@ -316,7 +402,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         flex: 1,
     },
-    copiedText: { position: 'absolute', color: 'grey', left: width / 2 - 30, bottom: height / 3 - 20, fontSize: fontScale * 14, zIndex: 99 },
+    copiedText: {
+        position: 'absolute',
+        color: 'white',
+        backgroundColor: '#353935',
+        padding: 6,
+        opacity: 0.8,
+        left: width / 2 - 30,
+        bottom: height / 6 - 20,
+        fontSize: fontScale * 12,
+        zIndex: 99
+    },
     userRow: {
         flexDirection: 'row',
         // backgroundColor: 'grey',
@@ -356,6 +452,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         height: height / 10
 
+    },
+    forwardFieldRow: {
+        flexDirection: 'row',
+        height: height / 7,
+        justifyContent: 'flex-end',
+        paddingRight: 10
     },
     blockText: {
         fontSize: fontScale * 15,
@@ -462,6 +564,20 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginLeft: 'auto',
     },
+    forwardModalView: {
+        backgroundColor: "white",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        width: '100%',
+        height: height
+    },
+
     modalViewList: {
         height: 30,
         justifyContent: 'center'
@@ -471,19 +587,38 @@ const styles = StyleSheet.create({
     },
     deleteAcc: {
         color: '#e63c42'
+    },
+
+    userListRow: {
+        flexDirection: 'row',
+        // backgroundColor: 'grey',
+        height: height / 10,
+        alignItems: 'center',
+        borderBottomColor: '#ec8652',
+        borderBottomWidth: 1,
+        borderStyle: 'solid',
+        position: 'relative',
+    },
+    userListName: {
+        fontSize: fontScale * 14,
+        color: 'black',
+        fontWeight: 'bold'
+    },
+    forwardUserActive: {
+        color: '#ec8652'
     }
 });
 
 
 function mapStateToProps(state) {
-    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.blocked_users)
+    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.users_list?.users)
     return {
         messages: state.root.all_msgs?.messages,
         isLoading: state.root.all_msgs?.loading,
         selectedUserMessages: state.root.selected_user_all_msgs?.messages,
         selectedUserMessagesLoading: state.root.selected_user_all_msgs?.loading,
         blockedUsers: state.root.blocked_users,
-
+        usersList: state.root.users_list?.users,
 
     }
 }
