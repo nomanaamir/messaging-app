@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import {
     SafeAreaView,
     ScrollView,
@@ -9,9 +9,8 @@ import {
     TouchableOpacity,
     ActivityIndicator
 } from 'react-native';
-import auth from '@react-native-firebase/auth';
 import { logOut, getAllUsers, RetrieveDataAssyncStorage, getMessages, deleteCurrentUserMessagesNode, deleteCurrentUserInfo, deleteAccount } from '../../Store/Middlewares/middlewares';
-const { height, fontScale, width } = Dimensions.get('window')
+const { height, fontScale } = Dimensions.get('window')
 import { connect } from 'react-redux';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 
@@ -32,19 +31,15 @@ function Home(props) {
         const getUsers = props.usersList.filter(item => {
             return item.uid !== props.currentUser?.uid
         });
-        console.log('getUsers', getUsers);
-        console.log('currentUSer', props.currentUser);
 
-        getUsers.forEach(item => {
-            props.deleteCurrentUserMessagesNodeAction(item, props.currentUser)
-        });
-        props.deleteCurrentUserInfoAction(props.currentUser);
-        props.deleteAccountAction();
+        // getUsers.forEach(item => {
+        //     props.deleteCurrentUserMessagesNodeAction(getUsers, props.currentUser)
+        // });
+        // props.deleteCurrentUserInfoAction(props.currentUser);
+        props.deleteAccountAction(getUsers, props.currentUser);
 
     }
     const chatRoom = (selectedUser, currentUser) => {
-        console.log('currentUser', currentUser)
-        console.log('selectedUser', selectedUser)
         navigation.navigate('chatRoom', {
             currentUser: currentUser,
             selectedUser: selectedUser,
@@ -54,23 +49,13 @@ function Home(props) {
     const getLastMsg = (uid) => {
         let msgsArray = Object.values(props.messages[uid] || {});
         let lastIndex = msgsArray.length - 1;
-        console.log('lastIndex', msgsArray[lastIndex]);
-        return msgsArray[lastIndex]?.message || "chat"
-        // const filterUserMsgs = msgsArray.filter(a => {
-        //     return a.sender === uid
-        // });
-        // console.log('filterUserMsgs', filterUserMsgs)
+        return msgsArray[lastIndex]?.message || "chat";
     }
 
     const getLastMsgTime = (uid) => {
         let msgsArray = Object.values(props.messages[uid] || {});
         let lastIndex = msgsArray.length - 1;
-        console.log('lastIndex', msgsArray[lastIndex]);
-        return msgsArray[lastIndex]?.time || ""
-        // const filterUserMsgs = msgsArray.filter(a => {
-        //     return a.sender === uid
-        // });
-        // console.log('filterUserMsgs', filterUserMsgs)
+        return msgsArray[lastIndex]?.time || "";
     }
     const getSortedUsers = () => {
         let data = props.usersList;
@@ -109,7 +94,6 @@ function Home(props) {
                                                 <View style={{ width: '80%' }}>
                                                     <Text style={styles.lastMsg} numberOfLines={1}>
                                                         {getLastMsg(item.uid)}
-                                                        {/* {props.currentUser?.uid} */}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -137,7 +121,6 @@ const styles = StyleSheet.create({
     },
     userRow: {
         flexDirection: 'row',
-        // backgroundColor: 'grey',
         height: height / 10,
         alignItems: 'center',
         borderBottomColor: '#ec8652',
@@ -167,7 +150,6 @@ const styles = StyleSheet.create({
 });
 
 function mapStateToProps(state) {
-    console.log('Redux State - home Screen', state.root.users_list)
     return {
         usersList: state.root.users_list?.users,
         isLoading: state.root.users_list?.loading,
@@ -184,7 +166,7 @@ function mapDispatchToProps(dispatch) {
         getMessagesAction: (currentUser) => { dispatch(getMessages(currentUser)) },
         deleteCurrentUserMessagesNodeAction: (selectedUser, currentUser) => { dispatch(deleteCurrentUserMessagesNode(selectedUser, currentUser)) },
         deleteCurrentUserInfoAction: (currentUser) => { dispatch(deleteCurrentUserInfo(currentUser)) },
-        deleteAccountAction: () => { dispatch(deleteAccount()) },
+        deleteAccountAction: (getUsers, currentUser) => { dispatch(deleteAccount(getUsers, currentUser)) },
 
 
 

@@ -53,16 +53,10 @@ function ChatRoom(props) {
         props.getMessagesAction(currentUser);
         props.getBlockedUsersAction(currentUser)
 
-        // console.log('props.messages', props.messages)
-        // console.log('  props.messages[selectedUser.uid]', props.messages[selectedUser.uid])
-
     }, [props.isLoading]);
     useEffect(() => {
 
         props.getSelectedUserMessagesAction(selectedUser);
-
-        // console.log('props.messages', props.messages)
-        // console.log('  props.messages[selectedUser.uid]', props.messages[selectedUser.uid])
 
     }, [props.selectedUserMessagesLoading]);
 
@@ -77,8 +71,6 @@ function ChatRoom(props) {
             }
         }
         setUserMsgs(msgsArray)
-        // console.log('msgs', msgsArray);
-        // markMsgsRead()
     }, [props.messages]);
 
     useEffect(() => {
@@ -90,9 +82,7 @@ function ChatRoom(props) {
                 msgsArray.push(obj)
             }
         }
-        console.log(']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]', msgsArray)
         setSelectedUserMsgs(msgsArray)
-        // console.log('msgs', msgsArray);
         markMsgsRead()
     }, [props.selectedUserMessages]);
     const copyToClipboard = () => {
@@ -115,18 +105,10 @@ function ChatRoom(props) {
         return strTime;
     }
     const sendMsg = () => {
-        // console.log('TIME', formatAMPM(new Date));
-        // console.log('typeMsg', typeMsg)
-        // console.log('currentUser', currentUser)
-        // console.log('selectedUser', selectedUser)
-
         props.sendMessageToUserAction(selectedUser, currentUser, typeMsg, formatAMPM(new Date))
         setTypeMsg('')
     }
     const deleteMsg = () => {
-        console.log('currentUserMsg', currentUserMsg);
-
-        console.log('selectedUserMsg', selectedUserMsg);
         props.deleteMessageAction(selectedUser, currentUser, selectedUserMsg.msgKey, currentUserMsg.msgKey)
         setMsgAction(false)
     }
@@ -174,16 +156,11 @@ function ChatRoom(props) {
         if (getSelectedUsersMsgs.length > 0) {
             getSelectedUsersMsgs.forEach((i => {
                 props.markMsgsToReadAction(selectedUser, currentUser, i.msgKey)
-
-                // console.log('haha', i.msgKey)
             }))
-            // alert('CALLED')
         }
-        console.log('getSelectedUsersMsgs', getSelectedUsersMsgs)
     }
 
     const getFooter = () => {
-        // console.log('props.blockedUsers', props.blockedUsers)
         if (props.blockedUsers.some((a) => (a.blockedUser === selectedUser?.uid) || (a.blockByUID === selectedUser?.uid))) {
             return <View style={styles.fieldRow}>
                 <Text style={styles.blockText}>Blocked!</Text>
@@ -415,7 +392,6 @@ const styles = StyleSheet.create({
     },
     userRow: {
         flexDirection: 'row',
-        // backgroundColor: 'grey',
         height: height / 10,
         alignItems: 'center',
         borderBottomColor: '#ec8652',
@@ -448,7 +424,6 @@ const styles = StyleSheet.create({
     fieldRow: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        // backgroundColor: 'red',
         alignItems: 'center',
         height: height / 10
 
@@ -492,13 +467,11 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         padding: 8,
         marginBottom: 10,
-        // minHeight: 50,
         minWidth: 70,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 12,
         overflow: 'visible'
-        // position: 'relative'
     },
     reciever: {
         borderColor: '#ec8652',
@@ -512,10 +485,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderTopRightRadius: 0,
-        // marginTop: 0,
-        // marginBottom: 0,
         marginRight: 0,
-        // alignItems: 'flex-end',
         marginLeft: 'auto'
     },
     msgText: {
@@ -544,7 +514,6 @@ const styles = StyleSheet.create({
     },
 
     centeredView: {
-        // alignItems: "center",
         flex: 1
     },
     modalView: {
@@ -591,7 +560,6 @@ const styles = StyleSheet.create({
 
     userListRow: {
         flexDirection: 'row',
-        // backgroundColor: 'grey',
         height: height / 10,
         alignItems: 'center',
         borderBottomColor: '#ec8652',
@@ -611,7 +579,6 @@ const styles = StyleSheet.create({
 
 
 function mapStateToProps(state) {
-    console.log('Redux State - Chat Room Screen-=-=-=-=->', state.root.users_list?.users)
     return {
         messages: state.root.all_msgs?.messages,
         isLoading: state.root.all_msgs?.loading,

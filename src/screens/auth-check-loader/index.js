@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, StatusBar, Style, Dimensions, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { connect } from 'react-redux';
 import { setNavigationProps } from '../../Store/Middlewares/middlewares';
 
-const { width, height, fontScale } = Dimensions.get('window')
 const AuthCheckLoaderScreen = (props) => {
     const { navigation } = props
     useEffect(() => {
@@ -15,17 +14,14 @@ const AuthCheckLoaderScreen = (props) => {
     const checkUser = async () => {
         try {
             const value = await AsyncStorage.getItem('store');
-            console.log('retrieveData', value)
-    
+
             if (value !== null) {
                 // We have data!!
                 let retrieveData = JSON.parse(value).data;
 
                 if (retrieveData.isLoggedIn) {
-                    console.log('home Init!')
                     navigation.navigate('home');
                 } else {
-                    console.log('phoneAuth Init!')
                     navigation.navigate('phoneAuth')
                 }
 

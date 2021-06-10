@@ -28,9 +28,9 @@ const forFade = ({ current }) => ({
 });
 function App() {
   useEffect(() => {
-    // BackHandler.addEventListener('hardwareBackPress', () => true)
-    // return () =>
-    //   BackHandler.removeEventListener('hardwareBackPress', () => true)
+    BackHandler.addEventListener('hardwareBackPress', () => true)
+    return () =>
+      BackHandler.removeEventListener('hardwareBackPress', () => true)
   }, [])
 
 

@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
 
     centeredView: {
         flex: 1,
-        // justifyContent: "space-between",
     },
     modalView: {
         backgroundColor: "white",

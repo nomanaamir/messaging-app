@@ -74,7 +74,6 @@ export function setNavigationProps(navigation) {
 
 export function setUserData(user) {
     return dispatch => {
-        console.log('user MIDDLWARE', user)
 
         dispatch({ type: ActionTypes.SIGN_IN_SUCCESS, payload: true })
         database.child(`users/${user?.uid}`).set(user).then(() => {
@@ -87,7 +86,6 @@ export function setUserData(user) {
 export function getCurrentUserData(uid) {
     return dispatch => {
         database.child(`users/${uid}`).on('value', ev => {
-            console.log('current user data', ev.val())
             dispatch({ type: ActionTypes.SIGN_IN_SUCCESS, payload: false })
             storeData(ev.val());
             redirect.navigate('home');
@@ -101,7 +99,6 @@ export function getAllUsers() {
         dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: {}, loading: true } })
 
         database.child(`users`).on('value', ev => {
-            console.log('all users', ev.val())
 
             if (ev.val()) {
                 dispatch({ type: ActionTypes.GET_ALL_USERS, payload: { users: Object.values(ev.val()), loading: false } })
@@ -124,8 +121,7 @@ export function sendMessageToUser(selectedUser, currentUser, newMessage, time) {
             read: false,
             time: time
         }
-        dispatch({ type: ActionTypes.LATEST_MSG_SENT, payload: selectedUser })
-        console.log('senderObject', senderObject)
+        dispatch({ type: ActionTypes.LATEST_MSG_SENT, payload: selectedUser });
         database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/`).push(senderObject);
         database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/`).push(senderObject);
 
@@ -136,7 +132,6 @@ export function markMsgsToRead(selectedUser, currentUser, msgKey) {
 
     return dispatch => {
         database.child(`msgs/${selectedUser.uid}/${currentUser.uid}/${msgKey}`).update({ read: true });
-        // database.child(`msgs/${currentUser.uid}/${selectedUser.uid}/${msgKey}`).update({ read: true });
 
     }
 }
@@ -146,7 +141,6 @@ export function getMessages(currentUser) {
         dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: true } })
 
         database.child(`msgs/${currentUser.uid}`).on('value', ev => {
-            console.log('middleware all msgs', ev.val())
 
             if (ev.val()) {
                 dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: ev.val(), loading: false } })
@@ -165,7 +159,6 @@ export function getSelectedUserMessages(selectedUser) {
         dispatch({ type: ActionTypes.GET_SELECTED_USER_MESSAGES, payload: { messages: {}, loading: true } })
 
         database.child(`msgs/${selectedUser.uid}`).on('value', ev => {
-            console.log('HAHAHAHA', ev.val())
 
             if (ev.val()) {
                 dispatch({ type: ActionTypes.GET_SELECTED_USER_MESSAGES, payload: { messages: ev.val(), loading: false } })
@@ -183,9 +176,6 @@ export function blockUser(selectedUser, currentUser) {
 
     return dispatch => {
         const blockedUser = { blockBy: currentUser.fullName, blockByUID: currentUser.uid, blockedUser: selectedUser.uid }
-
-        // database.child(`blockedUsers/${selectedUser.uid}`).push(blockedUser);
-        // database.child(`blockedUsers/${currentUser.uid}`).push(blockedUser);
 
         database.child(`blockedUsers/${selectedUser.uid}/${currentUser.uid}/`).set(blockedUser);
         database.child(`blockedUsers/${currentUser.uid}/${selectedUser.uid}/`).set(blockedUser);
@@ -217,7 +207,6 @@ export function deleteMessage(selectedUser, currentUser, selectedUserMsgKey, cur
 export function getBlockedUsers(currentUser) {
 
     return dispatch => {
-        // dispatch({ type: ActionTypes.GET_MESSAGES, payload: { messages: {}, loading: true } })
 
         database.child(`blockedUsers/${currentUser.uid}`).on('value', ev => {
 
@@ -245,12 +234,15 @@ export function logOut() {
 }
 
 
-export function deleteAccount() {
+export function deleteAccount(getUsers, currentUser) {
 
     return dispatch => {
         var user = auth().currentUser;
-        console.log('Deleted User', user)
         user.delete().then(function () {
+            getUsers.forEach(item => {
+                dispatch(deleteCurrentUserMessagesNode(item, currentUser));
+            });
+            dispatch(deleteCurrentUserInfo(currentUser));
             AsyncStorage.clear().then(() => {
                 dispatch(ResetStoredData())
                 alert('Account Deleted!')

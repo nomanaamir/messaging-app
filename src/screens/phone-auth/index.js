@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-// import firebase from 'firebase';
 import auth from '@react-native-firebase/auth';
 import {
     SafeAreaView,
@@ -9,8 +8,6 @@ import {
     View,
     Dimensions,
     ActivityIndicator,
-    Image,
-    TouchableOpacity,
     TextInput,
     Button
 } from 'react-native';
@@ -20,9 +17,8 @@ const { height, fontScale, width } = Dimensions.get('window')
 import CountryPicker from 'react-native-country-picker-modal'
 
 function PhoneAuth(props) {
-    const [countryCode, setCountryCode] = useState('AF')
-    const [callingCode, setCallingCode] = useState('+93')
-    const [emoji, setEmoji] = useState('')
+    const [countryCode, setCountryCode] = useState('AF');
+    const [callingCode, setCallingCode] = useState('+93');
 
 
     const [country, setCountry] = useState(null);
@@ -40,7 +36,6 @@ function PhoneAuth(props) {
 
 
     const [initializing, setInitializing] = useState(true);
-    // const [user, setUser] = useState();
 
     const { navigation } = props;
 
@@ -59,11 +54,9 @@ function PhoneAuth(props) {
         ) {
             alert('All fields required!')
         } else {
-            setIsLoading(true)
-            console.log('number', callingCode + phoneNumber)
+            setIsLoading(true);
             try {
                 const confirmation = await auth().signInWithPhoneNumber(callingCode + phoneNumber);
-                console.log('confirmation', confirmation);
                 setConfirm(confirmation);
                 setIsLoading(false)
                 setIsOTP(true);
@@ -73,8 +66,7 @@ function PhoneAuth(props) {
                 alert(error.message)
             }
         }
-        setPhoneNumber('');
-        setFullName('');
+      
     }
     async function confirmCode() {
         try {
@@ -88,17 +80,9 @@ function PhoneAuth(props) {
         setCode('');
     }
 
-    //   if (!confirm) {
-    //     return (
-    //       <Button
-    //         title="Phone Number Sign In"
-    //         onPress={() => signInWithPhoneNumber('+923233277884')}
-    //       />
-    //     );
-    //   }
+    
     function onAuthStateChanged(user) {
         if (user !== null) {
-            console.log('inside', user?.uid)
             const authUser = {
                 uid: user?.uid,
                 fullName: fullName,
@@ -107,11 +91,11 @@ function PhoneAuth(props) {
             props.setUserDataAction(authUser);
             setIsOTP(false);
         }
-        // console.log('outside', user !== null ? user?.uid: 'hello')
         if (initializing) setInitializing(false);
+        setPhoneNumber('');
+        setFullName('');
     }
     useEffect(() => {
-        // auth().signOut()
         props.setNavigationPropsAction(navigation);
 
     }, []);
@@ -218,7 +202,6 @@ function PhoneAuth(props) {
                                         placeholderTextColor="#b8babd"
 
                                     />
-                                    {/* <Text>{emoji}</Text> */}
                                 </View>
 
                             </View>
@@ -255,16 +238,13 @@ const styles = StyleSheet.create({
     },
     phoneAuth: {
         height: height / 2,
-        // backgroundColor: 'black'
     },
     phoneAuthBody: {
         flex: 3,
-        // backgroundColor: 'red',
         justifyContent: 'space-around'
     },
     phoneAuthFooter: {
         flex: 1,
-        // backgroundColor: 'orange',
         justifyContent: 'center',
         alignItems: 'center'
     },
@@ -294,8 +274,6 @@ const styles = StyleSheet.create({
     },
     CNcode: {
         width: '15%',
-        // borderBottomColor: 'black',
-
     },
     PHnumber: {
         width: '70%'
@@ -314,7 +292,6 @@ const styles = StyleSheet.create({
     }
 });
 function mapStateToProps(state) {
-    console.log('Redux State - SignIn Screen', state.root.signIn_success)
     return {
         authLoading: state.root.signIn_success
     }
